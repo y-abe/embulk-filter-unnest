@@ -14,11 +14,11 @@ import org.embulk.spi.type.Types;
 
 public class UnnestFilterPlugin implements FilterPlugin {
     public interface PluginTask extends Task {
-        @Config("column_name")
-        String getColumnName();
+        @Config("json_column_name")
+        String getJsonColumnName();
 
-        @Config("column_type")
-        String getColumnType();
+        @Config("value_type")
+        String getValueType();
     }
 
     @Override
@@ -42,16 +42,16 @@ public class UnnestFilterPlugin implements FilterPlugin {
 
         int i = 0;
         for (Column column : inputSchema.getColumns()) {
-            if (column.getName().equals(task.getColumnName())) {
-                if ("string".equals(task.getColumnType()))
+            if (column.getName().equals(task.getJsonColumnName())) {
+                if ("string".equals(task.getValueType()))
                     builder.add(new Column(i++, column.getName(), Types.STRING));
-                else if ("boolean".equals(task.getColumnType()))
+                else if ("boolean".equals(task.getValueType()))
                     builder.add(new Column(i++, column.getName(), Types.BOOLEAN));
-                else if ("double".equals(task.getColumnType()))
+                else if ("double".equals(task.getValueType()))
                     builder.add(new Column(i++, column.getName(), Types.DOUBLE));
-                else if ("long".equals(task.getColumnType()))
+                else if ("long".equals(task.getValueType()))
                     builder.add(new Column(i++, column.getName(), Types.LONG));
-                else if ("timestamp".equals(task.getColumnType()))
+                else if ("timestamp".equals(task.getValueType()))
                     builder.add(new Column(i++, column.getName(), Types.TIMESTAMP));
                 else // Json type
                     builder.add(new Column(i++, column.getName(), Types.JSON));

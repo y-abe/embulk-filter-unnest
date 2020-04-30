@@ -24,7 +24,7 @@ public class FilteredPageOutput implements PageOutput {
     FilteredPageOutput(PluginTask task, Schema inputSchema, Schema outputSchema, PageOutput pageOutput) {
         boolean targetColumnIndexInitialized = false;
         for (Column column : inputSchema.getColumns()) {
-            if (column.getName().equals(task.getColumnName())) {
+            if (column.getName().equals(task.getJsonColumnName())) {
                 targetColumnIndex = column.getIndex();
                 if (!Types.JSON.equals(column.getType()))
                     throw new IllegalArgumentException("invalid column type");
@@ -51,15 +51,15 @@ public class FilteredPageOutput implements PageOutput {
             for (Value value : pageReader.getJson(targetColumn).asArrayValue()) {
                 for (Column column : outputSchema.getColumns()) {
                     if (column.getIndex() == targetColumnIndex) {
-                        if ("string".equals(task.getColumnType()))
+                        if ("string".equals(task.getValueType()))
                             pageBuilder.setString(column, value.toString());
-                        else if ("boolean".equals(task.getColumnType()))
+                        else if ("boolean".equals(task.getValueType()))
                             pageBuilder.setBoolean(column, value.asBooleanValue().getBoolean());
-                        else if ("double".equals(task.getColumnType()))
+                        else if ("double".equals(task.getValueType()))
                             pageBuilder.setDouble(column, value.asFloatValue().toDouble());
-                        else if ("long".equals(task.getColumnType()))
+                        else if ("long".equals(task.getValueType()))
                             pageBuilder.setLong(column, value.asIntegerValue().toLong());
-                        else if ("timestamp".equals(task.getColumnType()))
+                        else if ("timestamp".equals(task.getValueType()))
                             throw new NotImplementedException("sorry");
                         else // Json type
                             throw new NotImplementedException("sorry");
