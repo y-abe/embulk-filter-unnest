@@ -35,4 +35,17 @@ public class TestUnnestFilterPlugin
         exception.expectMessage("Field 'json_column_name' is required but not set");
         config.loadConfig(PluginTask.class);
     }
+
+    @Test
+    public void testThrowExceptionAbsentValueType() {
+        String yaml = "" +
+                "type: unnest\n" +
+                "json_column_name: hoge";
+        ConfigSource config = getConfigFromYaml(yaml);
+
+        exception.expect(ConfigException.class);
+        exception.expectMessage("Field 'value_type' is required but not set");
+        config.loadConfig(PluginTask.class);
+    }
+
 }
