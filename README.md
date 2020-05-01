@@ -1,6 +1,6 @@
 # Unnest filter plugin for Embulk
 
-TODO: Write short description here and build.gradle file.
+Unnest json array column.
 
 ## Overview
 
@@ -8,17 +8,16 @@ TODO: Write short description here and build.gradle file.
 
 ## Configuration
 
-- **option1**: description (integer, required)
-- **option2**: description (string, default: `"myvalue"`)
-- **option3**: description (string, default: `null`)
+- **json_column_name**: a column name having json array to be unnested. (string, required)
+- **value_type**: type of value in json array (string, required)
 
 ## Example
 
 ```yaml
 filters:
   - type: unnest
-    option1: example1
-    option2: example2
+    json_column_name: hoge
+    value_type: string
 ```
 
 

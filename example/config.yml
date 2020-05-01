@@ -9,7 +9,7 @@ in:
     - - ["hoge3", ["aaa3", "bbb3", "ccc3"]]
 filters:
   - type: unnest
-    column_name: fuga
-    column_type: string
+    json_column_name: fuga
+    value_type: string
 out:
   type: stdout

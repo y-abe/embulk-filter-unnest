@@ -22,7 +22,11 @@ dependencies {
     compile  "org.embulk:embulk-core:0.9.23"
     provided "org.embulk:embulk-core:0.9.23"
     // compile "YOUR_JAR_DEPENDENCY_GROUP:YOUR_JAR_DEPENDENCY_MODULE:YOUR_JAR_DEPENDENCY_VERSION"
-    testCompile "junit:junit:4.+"
+    testImplementation "junit:junit:4.+"
+    testImplementation "org.embulk:embulk-core:0.9.23:tests"
+    testImplementation "org.embulk:embulk-core:0.9.23"
+    testImplementation "org.embulk:embulk-deps-buffer:0.9.23"
+    testImplementation "org.embulk:embulk-deps-config:0.9.23"
 }
 
 task classpath(type: Copy, dependsOn: ["jar"]) {
