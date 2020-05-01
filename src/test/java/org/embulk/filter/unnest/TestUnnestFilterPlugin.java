@@ -1,5 +1,6 @@
 package org.embulk.filter.unnest;
 
+import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigLoader;
 import org.embulk.config.ConfigSource;
@@ -13,6 +14,9 @@ public class TestUnnestFilterPlugin
 {
 
     @Rule
+    public EmbulkTestRuntime runtime = new EmbulkTestRuntime();
+
+    @Rule
     public ExpectedException exception = ExpectedException.none();
 
     private ConfigSource getConfigFromYaml(String yaml) {
@@ -22,14 +26,13 @@ public class TestUnnestFilterPlugin
 
     @Test
     public void testThrowExceptionAbsentJsonColumnName() {
-        // String yaml = "" +
-        //         "type: unnest\n" +
-        //         "json_column_name: aaa\n" +
-        //         "value_type: string";
-        // ConfigSource config = getConfigFromYaml(yaml);
+        String yaml = "" +
+                "type: unnest\n" +
+                "value_type: string";
+        ConfigSource config = getConfigFromYaml(yaml);
 
-        // exception.expect(ConfigException.class);
-        // exception.expectMessage("aa");
-        // config.loadConfig(PluginTask.class);
+        exception.expect(ConfigException.class);
+        exception.expectMessage("Field 'json_column_name' is required but not set");
+        config.loadConfig(PluginTask.class);
     }
 }
