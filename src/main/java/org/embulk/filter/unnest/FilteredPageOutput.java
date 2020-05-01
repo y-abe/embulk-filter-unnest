@@ -1,6 +1,7 @@
 package org.embulk.filter.unnest;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.embulk.config.ConfigException;
 import org.embulk.filter.unnest.UnnestFilterPlugin.PluginTask;
 import org.embulk.spi.Column;
 import org.embulk.spi.Exec;
@@ -27,14 +28,14 @@ public class FilteredPageOutput implements PageOutput {
             if (column.getName().equals(task.getJsonColumnName())) {
                 targetColumnIndex = column.getIndex();
                 if (!Types.JSON.equals(column.getType()))
-                    throw new IllegalArgumentException("invalid column type");
+                    throw new ConfigException(String.format("column %s must be json type", column.getName()));
 
                 targetColumnIndexInitialized = true;
                 break;
             }
         }
         if (!targetColumnIndexInitialized)
-            throw new IllegalArgumentException("target column missing");
+            throw new ConfigException(String.format("column %s not found", task.getJsonColumnName()));
 
         this.task = task;
         this.inputSchema = inputSchema;

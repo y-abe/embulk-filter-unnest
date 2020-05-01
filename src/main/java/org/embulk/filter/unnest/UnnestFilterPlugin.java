@@ -3,6 +3,7 @@ package org.embulk.filter.unnest;
 import com.google.common.collect.ImmutableList;
 
 import org.embulk.config.Config;
+import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
 import org.embulk.config.TaskSource;
@@ -41,6 +42,7 @@ public class UnnestFilterPlugin implements FilterPlugin {
         ImmutableList.Builder<Column> builder = ImmutableList.builder();
 
         int i = 0;
+        boolean isJsonColumnSet = false;
         for (Column column : inputSchema.getColumns()) {
             if (column.getName().equals(task.getJsonColumnName())) {
                 if ("string".equals(task.getValueType()))
@@ -55,10 +57,14 @@ public class UnnestFilterPlugin implements FilterPlugin {
                     builder.add(new Column(i++, column.getName(), Types.TIMESTAMP));
                 else // Json type
                     builder.add(new Column(i++, column.getName(), Types.JSON));
+                isJsonColumnSet = true;
             } else {
                 builder.add(new Column(i++, column.getName(), column.getType()));
             }
         }
+
+        if (!isJsonColumnSet)
+            throw new ConfigException(String.format("column %s not found", task.getJsonColumnName()));
 
         return new Schema(builder.build());
     }
