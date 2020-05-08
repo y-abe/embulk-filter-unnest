@@ -4,6 +4,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.embulk.config.ConfigException;
 import org.embulk.filter.unnest.UnnestFilterPlugin.PluginTask;
 import org.embulk.spi.Column;
+import org.embulk.spi.ColumnVisitor;
 import org.embulk.spi.Exec;
 import org.embulk.spi.Page;
 import org.embulk.spi.PageBuilder;
@@ -13,13 +14,87 @@ import org.embulk.spi.Schema;
 import org.embulk.spi.type.Types;
 import org.msgpack.value.Value;
 
+class ColumnVisitorImpl implements ColumnVisitor {
+
+    private final PageBuilder pageBuilder;
+    private final PageReader pageReader;
+    private final Column targetColumn;
+
+    ColumnVisitorImpl(PageBuilder pageBuilder, PageReader pageReader, Column targetColumn) {
+        this.pageBuilder = pageBuilder;
+        this.pageReader = pageReader;
+        this.targetColumn = targetColumn;
+    }
+
+    @Override
+    public void booleanColumn(Column column) {
+        if (pageReader.isNull(column))
+            pageBuilder.setNull(column);
+        else {
+            if (!column.equals(targetColumn))
+                pageBuilder.setBoolean(column, pageReader.getBoolean(column));
+        }
+    }
+
+    @Override
+    public void longColumn(Column column) {
+        if (pageReader.isNull(column))
+            pageBuilder.setNull(column);
+        else {
+            if (!column.equals(targetColumn))
+                pageBuilder.setLong(column, pageReader.getLong(column));
+        }
+    }
+
+    @Override
+    public void doubleColumn(Column column) {
+        if (pageReader.isNull(column))
+            pageBuilder.setNull(column);
+        else {
+            if (!column.equals(targetColumn))
+                pageBuilder.setNull(column);
+        }
+    }
+
+    @Override
+    public void stringColumn(Column column) {
+        if (pageReader.isNull(column))
+            pageBuilder.setNull(column);
+        else {
+            if (!column.equals(targetColumn))
+                pageBuilder.setString(column, pageReader.getString(column));
+        }
+    }
+
+    @Override
+    public void timestampColumn(Column column) {
+        if (pageReader.isNull(column))
+            pageBuilder.setNull(column);
+        else {
+            if (!column.equals(targetColumn))
+                pageBuilder.setTimestamp(column, pageReader.getTimestamp(column));
+        }
+    }
+
+    @Override
+    public void jsonColumn(Column column) {
+        if (pageReader.isNull(column))
+            pageBuilder.setNull(column);
+        else {
+            if (!column.equals(targetColumn))
+                pageBuilder.setJson(column, pageReader.getJson(column));
+        }
+    }
+}
+
 public class FilteredPageOutput implements PageOutput {
 
     private final PluginTask task;
     private final Schema inputSchema;
     private final Schema outputSchema;
-    private final PageReader pageReader;
     private final PageBuilder pageBuilder;
+    private final PageReader pageReader;
+    private final ColumnVisitorImpl visitor;
     private int targetColumnIndex;
 
     FilteredPageOutput(PluginTask task, Schema inputSchema, Schema outputSchema, PageOutput pageOutput) {
@@ -39,46 +114,38 @@ public class FilteredPageOutput implements PageOutput {
 
         this.task = task;
         this.inputSchema = inputSchema;
-        this.outputSchema = outputSchema;
-        this.pageReader = new PageReader(inputSchema);
         this.pageBuilder = new PageBuilder(Exec.getBufferAllocator(), outputSchema, pageOutput);
+        this.pageReader = new PageReader(inputSchema);
+        this.outputSchema = outputSchema;
+
+        Column targetColumn = inputSchema.getColumn(targetColumnIndex);
+        visitor = new ColumnVisitorImpl(this.pageBuilder, this.pageReader, targetColumn);
     }
 
     @Override
     public void add(Page page) {
         pageReader.setPage(page);
+
         while (pageReader.nextRecord()) {
+            outputSchema.visitColumns(visitor);
+
             Column targetColumn = inputSchema.getColumn(targetColumnIndex);
-            for (Value value : pageReader.getJson(targetColumn).asArrayValue()) {
-                for (Column column : outputSchema.getColumns()) {
-                    if (column.getIndex() == targetColumnIndex) {
-                        if ("string".equals(task.getValueType()))
-                            pageBuilder.setString(column, value.toString());
-                        else if ("boolean".equals(task.getValueType()))
-                            pageBuilder.setBoolean(column, value.asBooleanValue().getBoolean());
-                        else if ("double".equals(task.getValueType()))
-                            pageBuilder.setDouble(column, value.asFloatValue().toDouble());
-                        else if ("long".equals(task.getValueType()))
-                            pageBuilder.setLong(column, value.asIntegerValue().toLong());
-                        else if ("timestamp".equals(task.getValueType()))
-                            throw new NotImplementedException("sorry");
-                        else // Json type
-                            throw new NotImplementedException("sorry");
-                    } else {
-                        if (Types.STRING.equals(column.getType()))
-                            pageBuilder.setString(column, pageReader.getString(column));
-                        else if (Types.BOOLEAN.equals(column.getType()))
-                            pageBuilder.setBoolean(column, pageReader.getBoolean(column));
-                        else if (Types.DOUBLE.equals(column.getType()))
-                            pageBuilder.setDouble(column, pageReader.getDouble(column));
-                        else if (Types.LONG.equals(column.getType()))
-                            pageBuilder.setLong(column, pageReader.getLong(column));
-                        else if (Types.TIMESTAMP.equals(column.getType()))
-                            pageBuilder.setTimestamp(column, pageReader.getTimestamp(column));
-                        else // Json type
-                            pageBuilder.setJson(column, pageReader.getJson(column));
-                    }
-                }
+
+            // TODO: what to do if value is null?
+            for (Value value : pageReader.getJson(targetColumnIndex).asArrayValue()) {
+                if ("string".equals(task.getValueType()))
+                    pageBuilder.setString(targetColumn, value.toString());
+                else if ("boolean".equals(task.getValueType()))
+                    pageBuilder.setBoolean(targetColumn, value.asBooleanValue().getBoolean());
+                else if ("double".equals(task.getValueType()))
+                    pageBuilder.setDouble(targetColumn, value.asFloatValue().toDouble());
+                else if ("long".equals(task.getValueType()))
+                    pageBuilder.setLong(targetColumn, value.asIntegerValue().toLong());
+                else if ("timestamp".equals(task.getValueType()))
+                    throw new NotImplementedException("sorry");
+                else // Json type
+                    throw new NotImplementedException("sorry");
+
                 pageBuilder.addRecord();
             }
         }
@@ -91,7 +158,6 @@ public class FilteredPageOutput implements PageOutput {
 
     @Override
     public void close() {
-        pageReader.close();
         pageBuilder.close();
     }
 
