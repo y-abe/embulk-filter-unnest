@@ -142,9 +142,11 @@ public class FilteredPageOutput implements PageOutput {
                 else if ("long".equals(task.getValueType()))
                     pageBuilder.setLong(targetColumn, value.asIntegerValue().toLong());
                 else if ("timestamp".equals(task.getValueType()))
-                    throw new NotImplementedException("sorry");
-                else // Json type
-                    throw new NotImplementedException("sorry");
+                    throw new NotImplementedException("Not implemented");
+                else if ("json".equals(task.getValueType()))
+                    pageBuilder.setJson(targetColumn, value);
+                else
+                    throw new ConfigException("Unknown type");
 
                 pageBuilder.addRecord();
             }
