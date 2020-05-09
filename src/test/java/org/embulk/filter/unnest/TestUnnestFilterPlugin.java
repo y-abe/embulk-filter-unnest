@@ -48,4 +48,14 @@ public class TestUnnestFilterPlugin
         config.loadConfig(PluginTask.class);
     }
 
+    @Test
+    public void testUnnested() {
+        String yaml = "" +
+        "type: unnest\n" +
+        "json_column_name: hoge\n" +
+        "value_type: string";
+
+        ConfigSource config = getConfigFromYaml(yaml);
+    }
+
 }
