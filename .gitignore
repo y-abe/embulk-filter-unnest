@@ -12,3 +12,4 @@ build/
 .project
 /bin/
 .vscode
+/build/
