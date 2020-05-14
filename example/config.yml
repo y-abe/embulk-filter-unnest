@@ -10,6 +10,5 @@ in:
 filters:
   - type: unnest
     json_column_name: fuga
-    value_type: string
 out:
   type: stdout

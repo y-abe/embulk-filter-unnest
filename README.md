@@ -9,7 +9,6 @@ Unnest json array column.
 ## Configuration
 
 - **json_column_name**: a column name having json array to be unnested. (string, required)
-- **value_type**: type of value in json array (string, required)
 
 ## Example
 
@@ -17,7 +16,6 @@ Unnest json array column.
 filters:
   - type: unnest
     json_column_name: hoge
-    value_type: string
 ```
 
 

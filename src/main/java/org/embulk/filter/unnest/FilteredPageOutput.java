@@ -1,7 +1,5 @@
 package org.embulk.filter.unnest;
 
-import org.apache.commons.lang3.NotImplementedException;
-import org.embulk.config.ConfigException;
 import org.embulk.filter.unnest.UnnestFilterPlugin.PluginTask;
 import org.embulk.spi.Column;
 import org.embulk.spi.ColumnVisitor;
@@ -11,7 +9,6 @@ import org.embulk.spi.PageBuilder;
 import org.embulk.spi.PageOutput;
 import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
-import org.embulk.spi.type.Types;
 import org.msgpack.value.Value;
 
 class ColumnVisitorImpl implements ColumnVisitor {
@@ -95,22 +92,8 @@ public class FilteredPageOutput implements PageOutput {
     private final PageBuilder pageBuilder;
     private final PageReader pageReader;
     private final ColumnVisitorImpl visitor;
-    private int targetColumnIndex;
 
     FilteredPageOutput(PluginTask task, Schema inputSchema, Schema outputSchema, PageOutput pageOutput) {
-        boolean targetColumnIndexInitialized = false;
-        for (Column column : inputSchema.getColumns()) {
-            if (column.getName().equals(task.getJsonColumnName())) {
-                targetColumnIndex = column.getIndex();
-                if (!Types.JSON.equals(column.getType()))
-                    throw new ConfigException(String.format("column %s must be json type", column.getName()));
-
-                targetColumnIndexInitialized = true;
-                break;
-            }
-        }
-        if (!targetColumnIndexInitialized)
-            throw new ConfigException(String.format("column %s not found", task.getJsonColumnName()));
 
         this.task = task;
         this.inputSchema = inputSchema;
@@ -118,8 +101,7 @@ public class FilteredPageOutput implements PageOutput {
         this.pageReader = new PageReader(inputSchema);
         this.outputSchema = outputSchema;
 
-        Column targetColumn = inputSchema.getColumn(targetColumnIndex);
-        visitor = new ColumnVisitorImpl(this.pageBuilder, this.pageReader, targetColumn);
+        visitor = new ColumnVisitorImpl(this.pageBuilder, this.pageReader, inputSchema.lookupColumn(task.getJsonColumnName()));
     }
 
     @Override
@@ -129,25 +111,10 @@ public class FilteredPageOutput implements PageOutput {
         while (pageReader.nextRecord()) {
             outputSchema.visitColumns(visitor);
 
-            Column targetColumn = inputSchema.getColumn(targetColumnIndex);
+            Column targetColumn = inputSchema.lookupColumn(task.getJsonColumnName());
 
-            // TODO: what to do if value is null?
-            for (Value value : pageReader.getJson(targetColumnIndex).asArrayValue()) {
-                if ("string".equals(task.getValueType()))
-                    pageBuilder.setString(targetColumn, value.toString());
-                else if ("boolean".equals(task.getValueType()))
-                    pageBuilder.setBoolean(targetColumn, value.asBooleanValue().getBoolean());
-                else if ("double".equals(task.getValueType()))
-                    pageBuilder.setDouble(targetColumn, value.asFloatValue().toDouble());
-                else if ("long".equals(task.getValueType()))
-                    pageBuilder.setLong(targetColumn, value.asIntegerValue().toLong());
-                else if ("timestamp".equals(task.getValueType()))
-                    throw new NotImplementedException("Not implemented");
-                else if ("json".equals(task.getValueType()))
-                    pageBuilder.setJson(targetColumn, value);
-                else
-                    throw new ConfigException("Unknown type");
-
+            for (Value value : pageReader.getJson(targetColumn).asArrayValue()) {
+                pageBuilder.setJson(targetColumn, value);
                 pageBuilder.addRecord();
             }
         }
