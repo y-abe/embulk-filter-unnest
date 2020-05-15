@@ -4,7 +4,7 @@
 *.gemspec
 .gradle/
 /classpath/
-build/
+/build/
 .idea
 /.settings/
 /.metadata/
