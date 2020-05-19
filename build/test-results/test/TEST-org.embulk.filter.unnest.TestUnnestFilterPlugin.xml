@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.embulk.filter.unnest.TestUnnestFilterPlugin" tests="3" skipped="0" failures="0" errors="0" timestamp="2020-05-18T04:18:19" hostname="PC-NO417.local" time="1.432">
+  <properties/>
+  <testcase name="testThrowExceptionAbsentJsonColumnName" classname="org.embulk.filter.unnest.TestUnnestFilterPlugin" time="1.242"/>
+  <testcase name="testSchema" classname="org.embulk.filter.unnest.TestUnnestFilterPlugin" time="0.049"/>
+  <testcase name="testValues" classname="org.embulk.filter.unnest.TestUnnestFilterPlugin" time="0.141"/>
+  <system-out><![CDATA[org.embulk.spi.Page@3fea5e7e
+]]></system-out>
+  <system-err><![CDATA[SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+]]></system-err>
+</testsuite>
