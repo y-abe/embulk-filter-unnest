@@ -3,7 +3,10 @@ plugins {
     id "com.github.jruby-gradle.base" version "1.5.0"
     id "java"
     id "checkstyle"
+    id "maven-publish"
+    id "org.embulk.embulk-plugins" version "0.4.1"
 }
+
 import com.github.jrubygradle.JRubyExec
 repositories {
     mavenCentral()
@@ -27,6 +30,12 @@ dependencies {
     testImplementation "org.embulk:embulk-core:0.9.23"
     testImplementation "org.embulk:embulk-deps-buffer:0.9.23"
     testImplementation "org.embulk:embulk-deps-config:0.9.23"
+}
+
+embulkPlugin {
+    mainClass = "org.embulk.filter.unnest.UnnestFilterPlugin"
+    category = "filter"
+    type = "unnest"
 }
 
 task classpath(type: Copy, dependsOn: ["jar"]) {
@@ -53,19 +62,6 @@ task checkstyle(type: Checkstyle) {
     source = sourceSets.main.allJava + sourceSets.test.allJava
 }
 
-task gem(type: JRubyExec, dependsOn: ["gemspec", "classpath"]) {
-    jrubyArgs "-S"
-    script "gem"
-    scriptArgs "build", "${project.name}.gemspec"
-    doLast { ant.move(file: "${project.name}-${project.version}.gem", todir: "pkg") }
-}
-
-task gemPush(type: JRubyExec, dependsOn: ["gem"]) {
-    jrubyArgs "-S"
-    script "gem"
-    scriptArgs "push", "pkg/${project.name}-${project.version}.gem"
-}
-
 task "package"(dependsOn: ["gemspec", "classpath"]) {
     doLast {
         println "> Build succeeded."
@@ -86,7 +82,6 @@ Gem::Specification.new do |spec|
   spec.description   = %[Unnest]
   spec.email         = ["y.abe.hep@gmail.com"]
   spec.licenses      = ["MIT"]
-  # TODO set this: spec.homepage      = "https://github.com/y.abe.hep/embulk-filter-unnest"
 
   spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"]
   spec.test_files    = spec.files.grep(%r"^(test|spec)/")
