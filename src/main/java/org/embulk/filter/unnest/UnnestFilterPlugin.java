@@ -1,9 +1,11 @@
 package org.embulk.filter.unnest;
 
 import org.embulk.config.Config;
+import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
 import org.embulk.config.TaskSource;
+import org.embulk.spi.Column;
 import org.embulk.spi.FilterPlugin;
 import org.embulk.spi.PageOutput;
 import org.embulk.spi.Schema;
@@ -17,6 +19,9 @@ public class UnnestFilterPlugin implements FilterPlugin {
     @Override
     public void transaction(ConfigSource config, Schema inputSchema, FilterPlugin.Control control) {
         PluginTask task = config.loadConfig(PluginTask.class);
+
+        // Verify if the column specified with json_column_name exists.
+        inputSchema.lookupColumn(task.getJsonColumnName());
 
         Schema outputSchema = inputSchema;
 
