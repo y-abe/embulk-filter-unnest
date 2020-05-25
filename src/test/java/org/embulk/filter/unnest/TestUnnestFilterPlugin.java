@@ -7,7 +7,6 @@ import static org.junit.Assert.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
-
 import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigLoader;
@@ -27,21 +26,23 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.msgpack.value.ValueFactory;
 
-public class TestUnnestFilterPlugin {
-
+public class TestUnnestFilterPlugin
+{
     @Rule
     public EmbulkTestRuntime runtime = new EmbulkTestRuntime();
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private ConfigSource getConfigFromYaml(String yaml) {
+    private ConfigSource getConfigFromYaml(String yaml)
+    {
         ConfigLoader loader = new ConfigLoader(Exec.getModelManager());
         return loader.fromYamlString(yaml);
     }
 
     @Test
-    public void testThrowExceptionAbsentJsonColumnName() {
+    public void testThrowExceptionAbsentJsonColumnName()
+    {
         String configYaml = "" + "type: unnest";
         ConfigSource config = getConfigFromYaml(configYaml);
 
@@ -51,7 +52,8 @@ public class TestUnnestFilterPlugin {
     }
 
     @Test
-    public void testSchema() {
+    public void testSchema()
+    {
         String configYaml = "" + "type: unnest\n" + "json_column_name: _c0";
         ConfigSource config = getConfigFromYaml(configYaml);
 
@@ -59,9 +61,9 @@ public class TestUnnestFilterPlugin {
 
         UnnestFilterPlugin plugin = new UnnestFilterPlugin();
         plugin.transaction(config, inputSchema, new Control() {
-
             @Override
-            public void run(TaskSource taskSource, Schema outputSchema) {
+            public void run(TaskSource taskSource, Schema outputSchema)
+            {
                 assertEquals(3, outputSchema.getColumnCount());
 
                 for (int i = 0; i < 3; i++) {
@@ -73,17 +75,19 @@ public class TestUnnestFilterPlugin {
     }
 
     @Test
-    public void testValues() {
+    public void testValues()
+    {
         String configYaml = "" + "type: unnest\n" + "json_column_name: _c0";
         ConfigSource config = getConfigFromYaml(configYaml);
 
         final Schema inputSchema = Schema.builder().add("_c0", JSON).add("_c1", STRING).add("_c2", STRING).build();
 
         UnnestFilterPlugin plugin = new UnnestFilterPlugin();
-        plugin.transaction(config, inputSchema, new Control() {
-
+        plugin.transaction(config, inputSchema, new Control()
+        {
             @Override
-            public void run(TaskSource taskSource, Schema outputSchema) {
+            public void run(TaskSource taskSource, Schema outputSchema)
+            {
                 MockPageOutput mockPageOutput = new MockPageOutput();
 
                 try (PageOutput pageOutput = plugin.open(taskSource, inputSchema, outputSchema, mockPageOutput)) {
@@ -114,11 +118,13 @@ public class TestUnnestFilterPlugin {
         });
     }
 
-    private String convertToJsonString(Object object) {
+    private String convertToJsonString(Object object)
+    {
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.writeValueAsString(object);
-        } catch (JsonProcessingException e) {
+        }
+        catch (JsonProcessingException e) {
             throw Throwables.propagate(e);
         }
     }

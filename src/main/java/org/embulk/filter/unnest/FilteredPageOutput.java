@@ -10,8 +10,8 @@ import org.embulk.spi.PageReader;
 import org.embulk.spi.Schema;
 import org.msgpack.value.Value;
 
-public class FilteredPageOutput implements PageOutput {
-
+public class FilteredPageOutput implements PageOutput
+{
     private final PluginTask task;
     private final Schema inputSchema;
     private final Schema outputSchema;
@@ -19,8 +19,8 @@ public class FilteredPageOutput implements PageOutput {
     private final PageReader pageReader;
     private final ColumnVisitorImpl visitor;
 
-    FilteredPageOutput(PluginTask task, Schema inputSchema, Schema outputSchema, PageOutput pageOutput) {
-
+    FilteredPageOutput(PluginTask task, Schema inputSchema, Schema outputSchema, PageOutput pageOutput)
+    {
         this.task = task;
         this.inputSchema = inputSchema;
         this.pageBuilder = new PageBuilder(Exec.getBufferAllocator(), outputSchema, pageOutput);
@@ -31,7 +31,8 @@ public class FilteredPageOutput implements PageOutput {
     }
 
     @Override
-    public void add(Page page) {
+    public void add(Page page)
+    {
         pageReader.setPage(page);
 
         while (pageReader.nextRecord()) {
@@ -47,13 +48,14 @@ public class FilteredPageOutput implements PageOutput {
     }
 
     @Override
-    public void finish() {
+    public void finish()
+    {
         pageBuilder.finish();
     }
 
     @Override
-    public void close() {
+    public void close()
+    {
         pageBuilder.close();
     }
-
 }
