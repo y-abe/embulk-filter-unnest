@@ -1,9 +1,5 @@
 package org.embulk.filter.unnest;
 
-import static org.embulk.spi.type.Types.JSON;
-import static org.embulk.spi.type.Types.STRING;
-import static org.junit.Assert.assertEquals;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
@@ -25,6 +21,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.msgpack.value.ValueFactory;
+
+import static org.embulk.spi.type.Types.JSON;
+import static org.embulk.spi.type.Types.STRING;
+import static org.junit.Assert.assertEquals;
 
 public class TestUnnestFilterPlugin
 {
