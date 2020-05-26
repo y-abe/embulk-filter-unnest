@@ -1,35 +1,31 @@
 plugins {
     id "com.jfrog.bintray" version "1.1"
-    id "com.github.jruby-gradle.base" version "1.5.0"
     id "java"
     id "checkstyle"
     id "maven-publish"
     id "org.embulk.embulk-plugins" version "0.4.1"
 }
 
-import com.github.jrubygradle.JRubyExec
 repositories {
     mavenCentral()
     jcenter()
 }
-configurations {
-    provided
-}
 
+group = "prd.y-abe"
 version = "0.1.0"
+description = "An Embulk plugin to unnest JSON array."
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    compile  "org.embulk:embulk-core:0.9.23"
-    provided "org.embulk:embulk-core:0.9.23"
+    compileOnly  "org.embulk:embulk-core:0.9.23"
     // compile "YOUR_JAR_DEPENDENCY_GROUP:YOUR_JAR_DEPENDENCY_MODULE:YOUR_JAR_DEPENDENCY_VERSION"
     testImplementation "junit:junit:4.+"
     testImplementation "org.embulk:embulk-core:0.9.23:tests"
     testImplementation "org.embulk:embulk-core:0.9.23"
-    testImplementation "org.embulk:embulk-deps-buffer:0.9.23"
-    testImplementation "org.embulk:embulk-deps-config:0.9.23"
+    testCompile "org.embulk:embulk-deps-buffer:0.9.23"
+    testCompile "org.embulk:embulk-deps-config:0.9.23"
 }
 
 embulkPlugin {
@@ -37,13 +33,6 @@ embulkPlugin {
     category = "filter"
     type = "unnest"
 }
-
-task classpath(type: Copy, dependsOn: ["jar"]) {
-    doFirst { file("classpath").deleteDir() }
-    from (configurations.runtime - configurations.provided + files(jar.archivePath))
-    into "classpath"
-}
-clean { delete "classpath" }
 
 checkstyle {
     configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
@@ -62,42 +51,34 @@ task checkstyle(type: Checkstyle) {
     source = sourceSets.main.allJava + sourceSets.test.allJava
 }
 
-task "package"(dependsOn: ["gemspec", "classpath"]) {
-    doLast {
-        println "> Build succeeded."
-        println "> You can run embulk with '-L ${file(".").absolutePath}' argument."
-    }
-}
-
-task gemspec {
-    ext.gemspecFile = file("${project.name}.gemspec")
-    inputs.file "build.gradle"
-    outputs.file gemspecFile
-    doLast { gemspecFile.write($/
-Gem::Specification.new do |spec|
-  spec.name          = "${project.name}"
-  spec.version       = "${project.version}"
-  spec.authors       = ["Yosuke Abe"]
-  spec.summary       = %[Unnest filter plugin for Embulk]
-  spec.description   = %[Unnest]
-  spec.email         = ["y.abe.hep@gmail.com"]
-  spec.licenses      = ["MIT"]
-
-  spec.files         = `git ls-files`.split("\n") + Dir["classpath/*.jar"]
-  spec.test_files    = spec.files.grep(%r"^(test|spec)/")
-  spec.require_paths = ["lib"]
-
-  #spec.add_dependency 'YOUR_GEM_DEPENDENCY', ['~> YOUR_GEM_DEPENDENCY_VERSION']
-  spec.add_development_dependency 'bundler', ['~> 1.0']
-  spec.add_development_dependency 'rake', ['~> 12.0']
-end
-/$)
-    }
-}
-clean { delete "${project.name}.gemspec" }
-
 test {
     testLogging {
         events 'standard_out', 'standard_error'
     }
+}
+
+publishing {
+    publications {
+        embulkPluginMaven(MavenPublication) {  // Publish it with "publishEmbulkPluginMavenPublicationToMavenRepository".
+            from components.java  // Must be "components.java". The dependency modification works only for it.
+        }
+    }
+    repositories {
+        maven {
+            url = "${project.buildDir}/mavenPublishLocal"
+        }
+    }
+}
+
+gem {
+    from("LICENSE")  // Optional -- if you need other files in the gem.
+    authors = [ "Yosuke ABe" ]
+    email = [ "y.abe.hep@gmail.com" ]
+    summary = "An Embulk plugin to unnest JSON array."
+    homepage = "https://github.com/y-abe/embulk-filter-unnest"
+    licenses = [ "MIT" ]
+}
+
+gemPush {
+    host = "https://rubygems.org"
 }
