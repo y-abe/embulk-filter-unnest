@@ -12,7 +12,7 @@ repositories {
 }
 
 group = "prd.y-abe"
-version = "0.1.0"
+version = "0.1.2"
 description = "An Embulk plugin to unnest JSON array."
 
 sourceCompatibility = 1.8
