@@ -24,6 +24,7 @@ import org.msgpack.value.ValueFactory;
 
 import static org.embulk.spi.type.Types.JSON;
 import static org.embulk.spi.type.Types.STRING;
+import static org.embulk.spi.type.Types.DOUBLE;
 import static org.junit.Assert.assertEquals;
 
 public class TestUnnestFilterPlugin
@@ -57,7 +58,7 @@ public class TestUnnestFilterPlugin
         String configYaml = "" + "type: unnest\n" + "json_column_name: _c0";
         ConfigSource config = getConfigFromYaml(configYaml);
 
-        final Schema inputSchema = Schema.builder().add("_c0", JSON).add("_c1", STRING).add("_c2", STRING).build();
+        final Schema inputSchema = Schema.builder().add("_c0", JSON).add("_c1", STRING).add("_c2", DOUBLE).build();
 
         UnnestFilterPlugin plugin = new UnnestFilterPlugin();
         plugin.transaction(config, inputSchema, new Control() {
@@ -80,7 +81,7 @@ public class TestUnnestFilterPlugin
         String configYaml = "" + "type: unnest\n" + "json_column_name: _c0";
         ConfigSource config = getConfigFromYaml(configYaml);
 
-        final Schema inputSchema = Schema.builder().add("_c0", JSON).add("_c1", STRING).add("_c2", STRING).build();
+        final Schema inputSchema = Schema.builder().add("_c0", JSON).add("_c1", STRING).add("_c2", DOUBLE).build();
 
         UnnestFilterPlugin plugin = new UnnestFilterPlugin();
         plugin.transaction(config, inputSchema, new Control()
@@ -94,7 +95,7 @@ public class TestUnnestFilterPlugin
                     for (Page page : PageTestUtils.buildPage(runtime.getBufferAllocator(), inputSchema,
                             ValueFactory.newArray(ValueFactory.newString("a1"), ValueFactory.newString("a2")),
                             "b",
-                            "c")) {
+                            0.5)) {
                         System.out.println(page);
                         pageOutput.add(page);
                     }
@@ -110,7 +111,7 @@ public class TestUnnestFilterPlugin
                         while (pageReader.nextRecord()) {
                             assertEquals(String.format("a%d", n++), pageReader.getJson(outputSchema.getColumn(0)).toString());
                             assertEquals("b", pageReader.getString(outputSchema.getColumn(1)));
-                            assertEquals("c", pageReader.getString(outputSchema.getColumn(2)));
+                            assertEquals(0.5, pageReader.getDouble(outputSchema.getColumn(2)), 0);
                         }
                     }
                 }
