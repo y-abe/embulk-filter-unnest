@@ -52,7 +52,7 @@ class ColumnVisitorImpl implements ColumnVisitor
         }
         else {
             if (!column.equals(targetColumn)) {
-                pageBuilder.setNull(column);
+                pageBuilder.setDouble(column, pageReader.getDouble(column));
             }
         }
     }
