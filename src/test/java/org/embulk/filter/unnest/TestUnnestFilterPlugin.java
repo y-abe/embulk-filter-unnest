@@ -22,9 +22,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.msgpack.value.ValueFactory;
 
+import static org.embulk.spi.type.Types.DOUBLE;
 import static org.embulk.spi.type.Types.JSON;
 import static org.embulk.spi.type.Types.STRING;
-import static org.embulk.spi.type.Types.DOUBLE;
 import static org.junit.Assert.assertEquals;
 
 public class TestUnnestFilterPlugin
