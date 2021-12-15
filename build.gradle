@@ -12,7 +12,7 @@ repositories {
 }
 
 group = "prd.y-abe"
-version = "0.1.2"
+version = "0.1.3"
 description = "An Embulk plugin to unnest JSON array."
 
 sourceCompatibility = 1.8
@@ -72,7 +72,7 @@ publishing {
 
 gem {
     from("LICENSE")  // Optional -- if you need other files in the gem.
-    authors = [ "Yosuke ABe" ]
+    authors = [ "Yosuke Abe" ]
     email = [ "y.abe.hep@gmail.com" ]
     summary = "An Embulk plugin to unnest JSON array."
     homepage = "https://github.com/y-abe/embulk-filter-unnest"
